@@ -2,21 +2,25 @@ import os
 import pandas as pd
 
 
-class TooManyFiles(Exception):
-    pass
+class AppExc(Exception):
+    def __init__(self, message):
+        Exception.__init__(self, message)
 
 
-class WithoutTxtFiles(Exception):
-    pass
-
-
-class FlipValues(Exception):
-    pass
+ExcDict = {'TooManyFiles': 'Too many files in current folder',
+           'WithoutTxtFiles': 'files with ".txt" extension not found',
+           'FlipValues': 'Время окончания должно быть больше времени начала'}
+for exc, mess in ExcDict.items():
+    ExcDict[exc] = (type(exc, (Exception, ), {})(mess))
 
 
 class PandasExceptions(Exception):
     pass
 
+
+path = 'C:/Users/Kirill/Desktop/Test_export'
+os.chdir(path)
+writer = pd.ExcelWriter('test.xlsx')
 
 def slash_reflector(file_name):
     true_file_name = file_name.replace('\\', '/')
@@ -30,9 +34,9 @@ def check_txt_ext(file_list):
         for file in file_list:
             bool_storage = bool_storage or '.txt' in file
         if not bool_storage:
-            raise WithoutTxtFiles("files with'.txt' extension not found")
+            raise ExcDict['WithoutTxtFiles']
     else:
-        raise TooManyFiles('Too many files in current folder')
+        raise ExcDict['TooManyFiles']
 
 
 def add_txt(file_list, path):
@@ -76,11 +80,11 @@ def define_time():
             start = 0
             stop = 3000
             if stop < start:
-                raise FlipValues
+                raise ExcDict['FlipValues']
         except ValueError:
             print('Введите целочисленные данные')
-        except FlipValues:
-            print('Время окончания должно быть больше времени начала')
+        except Exception as e:
+            print(e)
         else:
             break
 
@@ -178,9 +182,7 @@ def input_console_data(time):
             relevant_files = binding_with_time(os.listdir('.'), start_time, stop_time, path)
         except FileNotFoundError:
             print('Folder not exist')
-        except TooManyFiles as e:
-            print(e)
-        except WithoutTxtFiles as e:
+        except Exception as e:
             print(e)
         else:
             data += relevant_files
@@ -216,17 +218,21 @@ def add_suff(trial):
 
 def strings_df(data_frame, time):
     names = set()
+    time = time()
+    time = [str(t) for t in time]
+    time.append('ms')
+    time = '_'.join(time)
     dflist_vert = []
     dflist_hor = []
     trigger = False
-    ln = len(data_frame.index)
+    ln = data_frame.__len__()
     ln_aoi = len(data_frame.columns) - 7
     for i in range(ln):
         # С loc могут возникнуть проблемы iloc надёжнее
         par = data_frame.iloc[i, 4]
-        if i != ln:
+        if i != ln - 1:
             trigger = par != data_frame.iloc[i + 1, 4]
-        if trigger or i == ln:
+        if trigger or i == ln - 1:
             dflist_hor.append(pd.concat(dflist_vert, ignore_index=False, axis=1))
             dflist_vert.clear()
         if par not in names:
@@ -235,18 +241,17 @@ def strings_df(data_frame, time):
             dflist_vert.append(pd.DataFrame([par + '/headers', 'values'], columns=['']))
         aoi = data_frame.iloc[i, 6]
         visit = 'v' + str(data_frame.iloc[i, 5])
-        time = time()
-        time = [str(t) for t in time]
-        time.append('s')
-        time = '_'.join(time)
         for j in range(ln_aoi):
             val = data_frame.iloc[i, j + 7]
             var = data_frame.columns[j + 7]
-            dflist_vert.append(pd.DataFrame(['_'.join([var, aoi, visit, time]), val], columns=['']))
+            one_var = pd.DataFrame(['_'.join([var, aoi, visit, time]), val], columns=[''])
+            print(one_var)
+            dflist_vert.append(one_var)
     # main body, significant operators
     # ignore_index ?:
-    new_df = pd.concat([dflist_hor], axis=0)
-    print(new_df.iloc[0:5])
+    new_df = pd.concat(dflist_hor, axis=0)
+    new_df.to_excel(writer, index=False)
+    writer.save()
 
 
 def main(file_list, time):
