@@ -10,15 +10,21 @@ class WithoutTxtFiles(Exception):
     pass
 
 
+class FlipValues(Exception):
+    pass
+
+
 class PandasExceptions(Exception):
     pass
+
 
 def slash_reflector(file_name):
     true_file_name = file_name.replace('\\', '/')
     return true_file_name
 
+
 def check_txt_ext(file_list):
-    if len(file_list) < 60: # Настроить предельное количество файлов
+    if len(file_list) < 60:  # Настроить предельное количество файлов
         bool_storage = False
         # must be while with condition (not bool_storage and i < len(file_list))
         for file in file_list:
@@ -27,6 +33,7 @@ def check_txt_ext(file_list):
             raise WithoutTxtFiles("files with'.txt' extension not found")
     else:
         raise TooManyFiles('Too many files in current folder')
+
 
 def add_txt(file_list, path):
     path = slash_reflector(path)
@@ -40,6 +47,7 @@ def add_txt(file_list, path):
             output_list.append(file)
     return output_list
 
+
 def check_of_adding():
     while True:
         stop_continue = str(input("Do you want add more files? y/n: \n"))
@@ -50,6 +58,7 @@ def check_of_adding():
         else:
             print("You must enter 'y' or 'n'")
 
+
 def data_length_checker(data):
     if len(data) == 0:
         print('No relevant data')
@@ -57,21 +66,29 @@ def data_length_checker(data):
     else:
         return True
 
+
 def define_time():
     while True:
         try:
             print('Установите временной интервал для анализа данных в мс.')
-            #start = int(input('Время начала: '))
-            #stop = int(input('Время окончания: '))
+            # start = int(input('Время начала: '))
+            # stop = int(input('Время окончания: '))
             start = 0
             stop = 3000
+            if stop < start:
+                raise FlipValues
         except ValueError:
             print('Введите целочисленные данные')
+        except FlipValues:
+            print('Время окончания должно быть больше времени начала')
         else:
             break
+
     def time_int():
         return start, stop
+
     return time_int
+
 
 '''def checking_into_pandas(file, start_time, end_time):
     try:
@@ -90,6 +107,7 @@ def define_time():
                   f' не соответвует указанному пользователем')
             return False
         return True'''
+
 
 def time_check_up_decorator(start_time, end_time):
     def decorator(func):
@@ -113,16 +131,21 @@ def time_check_up_decorator(start_time, end_time):
                     return False
                 print(data)
                 return True
+
         return wrapped
+
     return decorator
+
 
 def binding_with_time(file_list, start_time, stop_time, *args):
     output_file_list = []
     slash = ''
     path = ''
+
     @time_check_up_decorator(start_time, stop_time)
     def open_csv(data_file):
         return pd.read_csv(data_file, sep='\t')
+
     # must be try-except:
     if len(args) > 0:
         path = slash_reflector(args[0])
@@ -140,13 +163,14 @@ def binding_with_time(file_list, start_time, stop_time, *args):
             output_file_list.append(file)
     return output_file_list
 
+
 def input_console_data(time):
     data = []
     start_time, stop_time = time()
     while True:
         print("Specify the full path to the data folder")
         print("Example 'X:/Users/MySMIexportFolder': ")
-        #path = str(input())
+        # path = str(input())
         path = 'C:/Users/Kirill/Desktop/Test_export'
         try:
             os.chdir(path)
@@ -160,11 +184,12 @@ def input_console_data(time):
             print(e)
         else:
             data += relevant_files
-            #data += add_txt(os.listdir('.'), path)
+            # data += add_txt(os.listdir('.'), path)
         finally:
             if check_of_adding() and data_length_checker(data):
                 break
     return data
+
 
 def file_list_console_output():
     time = define_time()
@@ -173,18 +198,21 @@ def file_list_console_output():
         data.add(file)
     return tuple(data), time
 
+
 def open_csv(file):
     return pd.read_csv(file, sep='\t')
 
+
 def add_suff(trial):
     suffix = ''
-    trial_suffix = {2:'_M_NF', 4:'_M_HF_f', 10:'_M_AF_f', 8:'_Self',
-    6:'_F_SF_f', 20:'_F_HF_f', 16:'_Self', 18:'_F_AF_f',
-    12:'_F_NF', 14:'_M_SF_f'}
+    trial_suffix = {2: '_M_NF', 4: '_M_HF_f', 10: '_M_AF_f', 8: '_Self',
+                    6: '_F_SF_f', 20: '_F_HF_f', 16: '_Self', 18: '_F_AF_f',
+                    12: '_F_NF', 14: '_M_SF_f'}
     trnum = int(trial[-2:])
     if trnum in trial_suffix:
         suffix = trial_suffix[trnum]
     return suffix
+
 
 def strings_df(data_frame, time):
     names = set()
@@ -201,7 +229,7 @@ def strings_df(data_frame, time):
         if trigger or i == ln:
             dflist_hor.append(pd.concat(dflist_vert, ignore_index=False, axis=1))
             dflist_vert.clear()
-        if not par in names:
+        if par not in names:
             names.add(par)
             # adding headers:
             dflist_vert.append(pd.DataFrame([par + '/headers', 'values'], columns=['']))
@@ -212,8 +240,8 @@ def strings_df(data_frame, time):
         time.append('s')
         time = '_'.join(time)
         for j in range(ln_aoi):
-            val = data_frame.iloc[i, j+7]
-            var = data_frame.columns[j+7]
+            val = data_frame.iloc[i, j + 7]
+            var = data_frame.columns[j + 7]
             dflist_vert.append(pd.DataFrame(['_'.join([var, aoi, visit, time]), val], columns=['']))
     # main body, significant operators
     # ignore_index ?:
@@ -221,11 +249,10 @@ def strings_df(data_frame, time):
     print(new_df.iloc[0:5])
 
 
-
 def main(file_list, time):
-    l = len(file_list)
+    ln = len(file_list)
     # Must be refactored for GUI version:
-    print(f'Amount of relevant files: {l}', file_list, '\n')
+    print(f'Amount of relevant files: {ln}', file_list, '\n')
     dflist = []
     for f in file_list:
         dflist.append(open_csv(f))
@@ -240,7 +267,7 @@ def main(file_list, time):
         # Значения с OUT почему-то пропускаются.
         trial = commondf.iloc[i, tr]
         aoi = commondf.iloc[i, aois]
-        if int(trial[-1])%2 != 0 or 'OUT' in aoi:
+        if int(trial[-1]) % 2 != 0 or 'OUT' in aoi:
             indices_for_drop.append(commondf.iloc[i].name)
         if 'Space' in aoi:
             aoi = 'nofeatures' + add_suff(trial)
@@ -251,11 +278,9 @@ def main(file_list, time):
             commondf.iloc[i, aois] = aoi + '_2'
     for i in range(len(indices_for_drop)):
         commondf.drop(indices_for_drop[i], inplace=True)
-    print(commondf.iloc[:, [0,4,5,6]])
+    print(commondf.iloc[:, [0, 4, 5, 6]])
     strings_df(commondf, time)
 
 
 if __name__ == "__main__":
     main(*file_list_console_output())
-
-
