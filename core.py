@@ -243,7 +243,7 @@ def strings_df(data_frame, time):
         visit = 'v' + str(data_frame.iloc[i, 5])
         for j in range(ln_aoi):
             val = data_frame.iloc[i, j + 7]
-            var = data_frame.columns[j + 7]
+            var = data_frame.columns[j + 7].replace(' ', '_')
             one_var = pd.DataFrame(['_'.join([var, aoi, visit, time]), val], columns=[''])
             print(one_var)
             dflist_vert.append(one_var)
