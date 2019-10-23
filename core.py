@@ -94,25 +94,6 @@ def define_time():
     return time_int
 
 
-'''def checking_into_pandas(file, start_time, end_time):
-    try:
-        data = pd.read_csv(file, sep="\t")
-    except Exception:
-        raise PandasExceptions(f'Invalid data format for: {file}')
-    else:
-        if data.loc[0, 'Export Start Trial Time [ms]'] != start_time:
-            print(f'Указанное вами время старта анализа данных'
-                  f' в файле {file}'
-                  f' не соответвует указанному пользователем')
-            return False
-        if data.loc[0, 'Export End Trial Time [ms]'] != end_time:
-            print(f'Указанное вами время старта анализа данных'
-                  f' в файле {file}'
-                  f' не соответвует указанному пользователем')
-            return False
-        return True'''
-
-
 def time_check_up_decorator(start_time, end_time):
     def decorator(func):
         def wrapped(file):
@@ -123,21 +104,19 @@ def time_check_up_decorator(start_time, end_time):
             else:
                 header = 'Export Start Trial Time [ms]'
                 if data.loc[data.loc[:, header].idxmax(), header] != start_time:
-                    print(f'Указанное вами значение начала интервала анализа данных'
+                    print(f'Указанное значение начала интервала анализа данных'
                           f' в файле {file}'
                           f' не соответвует указанному пользователем')
                     return False
                 header = 'Export End Trial Time [ms]'
                 if data.loc[data.loc[:, header].idxmax(), header] != end_time:
-                    print(f'Указанное вами значение конца интервала анализа данных'
+                    print(f'Указанное значение конца интервала анализа данных'
                           f' в файле {file}'
                           f' не соответвует указанному пользователем')
                     return False
                 print(data)
                 return True
-
         return wrapped
-
     return decorator
 
 
