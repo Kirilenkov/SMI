@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from difflib import ndiff
 
 
 class AppExc(Exception):
@@ -53,6 +54,7 @@ def add_txt(file_list, path):
 
 
 def check_of_adding():
+    # return True
     while True:
         stop_continue = str(input("Do you want add more files? y/n: \n"))
         if stop_continue.lower() == 'y':
@@ -195,15 +197,63 @@ def add_suff(trial):
     return suffix
 
 
+def average(df):
+    indices_for_drop = []
+    for i in range(df.__len__()):
+        if 'header' in df.iloc[i, 0]:
+            indices_for_drop.append(df.iloc[i].name)
+            df.iloc[i + 1, 0] = df.iloc[i, 0].split('/')[0]
+    indices_for_drop.pop(0)
+    df.iloc[0, 0] = 'participants\\variables'
+    for i in range(len(indices_for_drop)):
+        df.drop(indices_for_drop[i], inplace=True)
+    df.to_excel(writer, sheet_name='cleared', index=False)
+    writer.save()
+
+    avg_vars = {}
+    vars = pd.DataFrame(df.iloc[0, :].transpose())
+    vars.reset_index(inplace=True)
+    vars.sort_values(by=0, inplace=True)
+    vars.reset_index(inplace=True, drop=False)
+
+    for i in range(vars.__len__()):
+        if vars.iloc[i, 0] == 0:
+            vars.drop(index=vars.iloc[i].name, inplace=True)
+    print(vars)
+    ln = vars.__len__()
+
+    for i in range(ln):
+        loc = vars.iloc[i, 2]
+        if '_F_' in loc:
+            avg_vars[loc.replace('_F_', '_')] = vars.iloc[i, 0], vars.iloc[i + 4, 0]
+        if '_Self_1_' in loc:
+            avg_vars[loc.replace('_Self_1_', '_Self_')] = vars.iloc[i, 0], vars.iloc[i + 1, 0]
+    avg_df = pd.DataFrame([], columns=avg_vars.keys(), index=[df.iloc[1:, 0]])
+
+    for c, i in avg_vars.items():
+        avgs = []
+        for j in range(df.__len__()):
+            if j == 0:
+                continue
+            val1 = df.iloc[j, i[0]]
+            val2 = df.iloc[j, i[1]]
+            if val1 == '-' or val2 == '-':
+                avg = '-'
+            else:
+                avg = (float(val1) + float(val2))/2
+            avgs.append(avg)
+        avg_df.loc[:, c] = avgs
+    avg_df.to_excel(writer, sheet_name='averaging', index=True)
+    writer.save()
+
+
 def strings_df(data_frame, time):
-    names = set()
     time = time()
     time = [str(t) for t in time]
     time.append('ms')
     time = '_'.join(time)
     dflist_vert = []
     dflist_hor = []
-    trigger = False
     ln = data_frame.__len__()
     ln_aoi = len(data_frame.columns) - 7
     for i in range(ln):
@@ -228,16 +278,11 @@ def strings_df(data_frame, time):
             if i != ln - 1:
                 dflist_vert.append(pd.DataFrame([data_frame.iloc[i + 1, 4] + '/headers', 'values'], columns=['']))
 
-    # main body, significant operators
-    # ignore_index ?:
-    #c = 1
-    #for i in dflist_hor:
-    #   print(i)
-    #   print(i.to_excel(writer, sheet_name=str(c), index=False))
-    #    c += 1
     new_df = pd.concat(dflist_hor, axis=0)
-    new_df.to_excel(writer, index=False)
+    new_df.reset_index(inplace=True, drop=True)
+    new_df.to_excel(writer, sheet_name='raw data', index=False)
     writer.save()
+    average(new_df)
 
 
 def main(file_list, time):
