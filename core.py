@@ -208,26 +208,33 @@ def strings_df(data_frame, time):
     ln_aoi = len(data_frame.columns) - 7
     for i in range(ln):
         # С loc могут возникнуть проблемы iloc надёжнее
+
         par = data_frame.iloc[i, 4]
-        if i != ln - 1:
-            trigger = par != data_frame.iloc[i + 1, 4]
-        if trigger or i == ln - 1:
-            dflist_hor.append(pd.concat(dflist_vert, ignore_index=False, axis=1))
-            dflist_vert.clear()
-        if par not in names:
-            names.add(par)
+        if i == 0:
             # adding headers:
             dflist_vert.append(pd.DataFrame([par + '/headers', 'values'], columns=['']))
+
         aoi = data_frame.iloc[i, 6]
         visit = 'v' + str(data_frame.iloc[i, 5])
         for j in range(ln_aoi):
             val = data_frame.iloc[i, j + 7]
             var = data_frame.columns[j + 7].replace(' ', '_')
             one_var = pd.DataFrame(['_'.join([var, aoi, visit, time]), val], columns=[''])
-            print(one_var)
             dflist_vert.append(one_var)
+
+        if i == ln - 1 or par != data_frame.iloc[i + 1, 4]:
+            dflist_hor.append(pd.concat(dflist_vert, ignore_index=False, axis=1))
+            dflist_vert.clear()
+            if i != ln - 1:
+                dflist_vert.append(pd.DataFrame([data_frame.iloc[i + 1, 4] + '/headers', 'values'], columns=['']))
+
     # main body, significant operators
     # ignore_index ?:
+    #c = 1
+    #for i in dflist_hor:
+    #   print(i)
+    #   print(i.to_excel(writer, sheet_name=str(c), index=False))
+    #    c += 1
     new_df = pd.concat(dflist_hor, axis=0)
     new_df.to_excel(writer, index=False)
     writer.save()
