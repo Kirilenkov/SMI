@@ -239,23 +239,23 @@ def average(df):
     writer.save()
 
     avg_vars = {}
-    vars = pd.DataFrame(df.iloc[0, :].transpose())
-    vars.reset_index(inplace=True)
-    vars.sort_values(by=0, inplace=True)
-    vars.reset_index(inplace=True, drop=False)
+    var_names = pd.DataFrame(df.iloc[0, :].transpose())
+    var_names.reset_index(inplace=True)
+    var_names.sort_values(by=0, inplace=True)
+    var_names.reset_index(inplace=True, drop=False)
 
-    for i in range(vars.__len__()):
-        if vars.iloc[i, 0] == 0:
-            vars.drop(index=vars.iloc[i].name, inplace=True)
-    print(vars)
-    ln = vars.__len__()
+    for i in range(var_names.__len__()):
+        if var_names.iloc[i, 0] == 0:
+            var_names.drop(index=var_names.iloc[i].name, inplace=True)
+    print(var_names)
+    ln = var_names.__len__()
 
     for i in range(ln):
-        loc = vars.iloc[i, 2]
+        loc = var_names.iloc[i, 2]
         if '_F_' in loc:
-            avg_vars[loc.replace('_F_', '_')] = vars.iloc[i, 0], vars.iloc[i + 4, 0]
+            avg_vars[loc.replace('_F_', '_')] = var_names.iloc[i, 0], var_names.iloc[i + 4, 0]
         if '_Self_1_' in loc:
-            avg_vars[loc.replace('_Self_1_', '_Self_')] = vars.iloc[i, 0], vars.iloc[i + 1, 0]
+            avg_vars[loc.replace('_Self_1_', '_Self_')] = var_names.iloc[i, 0], var_names.iloc[i + 1, 0]
     avg_df = pd.DataFrame([], columns=avg_vars.keys(), index=[df.iloc[1:, 0]])
 
     for c, i in avg_vars.items():
@@ -348,4 +348,3 @@ def main(file_list, time):
 
 if __name__ == "__main__":
     main(*file_list_console_output())
-
