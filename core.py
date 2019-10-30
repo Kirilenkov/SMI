@@ -43,9 +43,9 @@ def path_setter(link, message=msg, stage=False):
 
 def slash_reflector(file_name):
     if os.name == 'nt':
-        true_file_name = file_name.replace('\\', '/')
-    else:
         true_file_name = file_name.replace('/', '\\')
+    else:
+        true_file_name = file_name.replace('\\', '/')
     return true_file_name
 
 
@@ -64,11 +64,11 @@ def check_txt_ext(file_list):
 
 def slash_checker(path_to_dir):
     if os.name == 'nt':
-        if path_to_dir[-1] != '/':
-            return '/'
-    else:
         if path_to_dir[-1] != '\\':
             return '\\'
+    else:
+        if path_to_dir[-1] != '/':
+            return '/'
     return ''
 
 
