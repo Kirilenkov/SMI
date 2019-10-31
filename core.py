@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from datetime import datetime as dt
 
 # for new averaging methods:
 # from difflib import ndiff
@@ -184,7 +185,8 @@ def input_console_data(time):
     path = ORDINARY_PATH
     path_setter(path)
     global writer
-    writer = pd.ExcelWriter('test.xlsx')
+    date = dt.today().strftime("%d-%m-%Y_%H-%M-%S")
+    writer = pd.ExcelWriter('SMI_export_{0:d}_{1:d}_{2:s}.xlsx'.format(start_time, stop_time, date))
     while True:
         try:
             check_txt_ext(os.listdir('.'))
