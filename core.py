@@ -2,8 +2,7 @@ import os
 import pandas as pd
 from datetime import datetime as dt
 
-'''Максимальное количество файлов в папке для анализа:'''
-MAX_FILES = 60
+
 ORDINARY_PATH = 'C:/Users/Kirill/Desktop/Test_export'
 writer = None
 
