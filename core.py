@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from datetime import datetime as dt
 
-
+MAX_FILES = 500
 ORDINARY_PATH = 'C:/Users/Kirill/Desktop/Test_export'
 writer = None
 
@@ -13,8 +13,8 @@ class AppExc(Exception):
 
 
 ExcDict = {'TooManyFiles': 'Too many files in current folder',
-           'WithoutTxtFiles': 'files with ".txt" extension not found',
-           'FlipValues': 'Время окончания должно быть больше времени начала'}
+           'WithoutTxtFiles': 'Files with ".txt" extension not found',
+           'FlipValues': 'End time must be longer than start time'}
 for exc, mess in ExcDict.items():
     ExcDict[exc] = (type(exc, (Exception, ), {})(mess))
 
