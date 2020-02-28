@@ -264,8 +264,12 @@ def average(df):
                 continue
             val1 = df.iloc[j, i[0]]
             val2 = df.iloc[j, i[1]]
-            if val1 == '-' or val2 == '-':
+            if val1 == '-' and val2 == '-':
                 avg = '-'
+            elif val1 == '-':
+                avg = val2
+            elif val2 == '-':
+                avg = val1
             else:
                 avg = (float(val1) + float(val2))/2
             avgs.append(avg)
